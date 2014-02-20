@@ -5,12 +5,12 @@
 
 ## Motivation
 
-The main motivating question behind **blockberry** is: `how to handle multiblock data?`
+The main motivating question behind **blockberry** is: *how to handle multiblock data?*
 
 Our approach for addressing the previous question is based on an extremely simple yet ingenuous concept: 
-take into account the block structure by means of what we call **block-dimension*
+take into account the block structure by means of what we call *block-dimension*
 
-Simply put, the `block-dimension` is implemented as an attribute in R objects that allows us 
+Simply put, the *block-dimension* is implemented as an attribute in R objects that allows us 
 to introduce a block structure.
 
 ## Installation
