@@ -5,29 +5,21 @@
 
 ## Motivation
 
-I developed `blockberry` to have a set of functions for testing objects in a friendly way, following the so-called [literate programming](http://www-cs-faculty.stanford.edu/~uno/lp.html) paradigm.
+The main motivating question behind **blockberry** is: `how to handle multiblock data?`
 
-Without `blockberry`: If you want to test if a number is positive, you would do something like this:
-```ruby
-number = 10
-if (number > 0) TRUE else FALSE
-```
+Our approach for addressing the previous question is based on an extremely simple yet ingenuous concept: 
+take into account the block structure by means of what we call **block-dimension*
 
-With `blockberry`: There is nothing wrong with the previous way of doing things. However, I still wanted to be able to type something like this:
-```ruby
-# another way
-is_positive(number)
-```
-This is what `blockberry` offers you. By having functions like `is_positive()`, it helps your code to be more understandable. The underlying principle is to have tools that get you closer to the literate programming paradigm. That was my purpose for developing `blockberry`
-
+Simply put, the `block-dimension` is implemented as an attribute in R objects that allows us 
+to introduce a block structure.
 
 ## Installation
 
-Since ```blockberry``` is an experimental in-progress package, its distribution is not CRAN but in github 
-at the repository [https://github.com/gastonstat/blockberry](https://github.com/gastonstat/blockberry)
+Since ```blockberry``` is an experimental in-progress package, its distribution is not on CRAN but on the github 
+repository [https://github.com/gastonstat/blockberry](https://github.com/gastonstat/blockberry)
 
 In order to install ```blockberry``` you need to use the function ```install_github()``` 
-from the package ```devtools``` (remember to install it first):
+from the package ```devtools``` (remember to install it first). Type the following lines in your R console:
 
 ```ruby
 # only if you haven't installed "devtools"
@@ -62,10 +54,10 @@ How to create a blockmatrix
 # say you have a numeric matrix
 m = matrix(1:20, 4, 5)
 
-# create a blockmatrix using arguments `rowparts` and `colparts`
+# option 1) blockmatrix using arguments `rowparts` and `colparts`
 bm1 = blockmatrix(m, rowparts = c(2, 2), colparts = c(3, 2))
 
-# create a blockmatrix using arguments `parts` and `dims`
+# option 2) blockmatrix using arguments `parts` and `dims`
 bm2 = blockmatrix(vnum, parts = c(2, 2, 3, 2), dims = c(2, 2))
 ```
 
@@ -75,4 +67,4 @@ Authors Contact
 
 [Gaston Sanchez](http://gastonsanchez.com) (```gaston.stat at gmail.com```)
 
-Mohamed Hanafi (````mohamed.hanafi at oniris-nantes.fr```)
+Mohamed Hanafi (```mohamed.hanafi at oniris-nantes.fr```)
