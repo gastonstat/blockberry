@@ -1,0 +1,134 @@
+\documentclass[12pt]{article}
+\usepackage{upquote}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{mathtools}
+\usepackage{color}
+\usepackage{hyperref}
+
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=3.5cm,rmargin=3.5cm}
+\setlength{\parindent}{0in}
+\setlength{\parskip}{0.4cm}
+
+
+\definecolor{darkgray}{rgb}{0.3,0.3,0.3}
+\definecolor{lightgray}{rgb}{0.5,0.5,0.5}
+\definecolor{tomato}{rgb}{0.87,0.32,0.24}
+\definecolor{myblue}{rgb}{0.066,0.545,0.890}
+\definecolor{linkcolor}{rgb}{0.87,0.32,0.24}
+\hypersetup{
+  colorlinks=true,
+  urlcolor=linkcolor,
+  linkcolor=linkcolor
+}
+
+
+%================ User specified LaTeX commands ============
+\newcommand{\blockberry}[1]{\texttt{blockberry}}
+\newcommand{\R}[1]{\textsf{R}}
+\newcommand{\blok}[1]{\mathbf{#1}}
+\newcommand\undermat[2]{%
+  \makebox[0pt][l]{$\smash{\underbrace{\phantom{%
+    \begin{matrix}#2\end{matrix}}}_{\text{$#1$}}}$}#2}
+
+
+% \VignetteIndexEntry{Introduction to blockberry}
+% \VignetteEngine{knitr}
+
+
+\begin{document}
+\title{R package \blockberry{}}
+\author{
+ Gaston Sanchez and Mohamed Hanafi
+}
+\date{\today}
+\maketitle
+
+<<load_maxbet, echo=FALSE, message=FALSE, eval=FALSE>>=
+library(blockberry)
+@
+
+\begin{abstract}
+This document introduces the \R{} package \blockberry{}, an experimental package for multiblock objects. It describes the different types of classes and  the main functions for handling and manipulating multiblock objects.
+\end{abstract}
+
+
+\subsection*{Preamble}
+\blockberry{} is an experimental R package designed to provide a wireframe for working with multiblock objects. \blockberry{} is jointly developed by Gaston Sanchez and Mohamed Hanafi. The implementation in \R{} is in charge of Gaston Sanchez, while the conceptual framework is in charge of Mohamed Hanafi.
+
+The development of \blockberry{} started in the spring of 2013 in the \textit{Unit of Sensometrics and Chemometrics} at Oniris-Nantes, France. Its inception is part of the research project \textbf{AI-FRUIT Program} (\url{http://www6.inra.fr/aifruit}) within the \textit{Data Analysis and Modeling} teams. 
+
+At the time of this writing, \blockberry{} is still in an early stage of production. There is a considerable amount of ideas on the back burner, and we expect to keep expanding the package features in the long term. 
+
+This document was initiated on August 1, 2013. The newest copy will always be available as a vignette in the package documentation.
+
+
+
+%==============================================================
+% Section 1: Introduction
+%==============================================================
+
+\section{Introduction}
+In this document we present the structure of the \R{} package \texttt{blockberry}. We describe its inner core and the different classes of objects that it contains. In addition, we discuss different functions and methods for manipulating, operating, and converting these objects.
+
+Before jumping in head first into the details behind \blockberry{}, we prefer to begin with some preliminary discussion. This will help us to set the basis for the next sections.
+
+
+\subsection{Preliminaries}
+\blockberry{} is an \R{} package that provides a toolbox for factorization methods of multi-blocks. Typically, this type of methods require data to have a certain tabular shape, usually a two-entry table with rows and columns. 
+
+\vspace{2mm}
+Most of the methods require the data to have one of the following structures:
+<<data_shapes, fig.cap='typical shapes of multi-block data', fig.width=6, fig.height=4, out.width='.9\\linewidth', out.height='.6\\linewidth', fig.align='center', fig.pos='h', echo=FALSE>>=
+op = par(mar = rep(1, 4))
+plot(c(10, 20), c(30, 45), type= "n", xlab = "", ylab = "")
+# horizontal K-block
+rect(10, 38, 12, 45)
+rect(12, 38, 14, 45)
+rect(14, 38, 16, 45)
+# vertical
+rect(18, 30, 20, 35)
+rect(18, 35, 20, 40)
+rect(18, 40, 20, 45)
+par(op)
+@
+
+\subsubsection*{Translating multi-blocks in \R{}}
+Some of the initial challenges we had to face, was how to deal with a multi-block structure in \R{}. More precisely, our question was: How to translate the concept of a multiblock in \R{}?
+
+\R{} has different objects and methods for handling and manipulating data (e.g. vectors, matrices, arrays, data frames, factors, and lists). The problem is that there is no data structure designed to represent the concept of multiblock.
+
+Virtually all multiblock methods require data to be in a tabular format. Mathematically, this format corresponds to a matrix, and for some cases, it also corresponds to a tensor (multi-way array). When we have a single block ---one set of variables---, a single matrix does the job. The difficulty comes when we have two or more sets of variables. How do we represent them in \R{}? One option is to get a matrix for each block. Then we can lump them together in a list. One of the drawbacks of this approach becomes apparent when programming the algorithms: they require a lot of \texttt{for} loops (which we want to avoid, or at least reduce).
+
+Our solution is to propose what we call \textbf{block-objetcs} such as \textit{block-vector, block-matrix}, and \textit{block-array}. The main idea is to represent partitioned objects in which we take into account the block structure.
+
+For instance, a block-matrix represents a partitioned matrix in which the partitions reflect the block structure. In other words, a block-matrix would not only contain the data but it would also contain information about which rows and columns form the different blocks. 
+
+The way in which we handle the block structure is by using a \textbf{block-dimension}. This dimension is the device that we propose to ``store'' the block structure.
+
+From a computationl standpoint, a block-matrix is a matrix with a special attribute: a \textbf{block-dimension}. The block-dimension attribute will provide the information associated to the number of blocks, and how they are structured inside the matrix. Simply put, you can think of a block-matrix as a matrix that can be partitioned in submatrices. 
+
+In \R{}, we define the block-matrix class as a matrix with a block-dimension attribute. However, it is important to notice that we are using R matrices just as a computational mean to represent a block-matrix. When we use a matrix to define a block-matrix, we use the matrix as a data container. In fact, the class of a block-matrix is not a \texttt{"matrix"}, it is a \texttt{"blockmatrix"}. 
+
+\vspace{2mm}
+There is no need to re-invent the wheel. So we use R matrices for convenience but alwyas keeping in mind that we use them just as data containers. In this way we take advantage of all the methods and functions that already exist in R for matrices. However, we define our own class of \texttt{"blockmatrix"} which has specific functions and methods.
+
+
+\subsection{Some Terminology and Notations}
+It is important to define some notation and terms:
+
+\begin{itemize}
+ \item \blockberry{}: name of the R package for multi-block methods
+ \item block: conceptual term that conveys the idea of a set of variables
+ \item multiblock: generic term referring to either multi-block methods or multi-block objects
+ \item \texttt{"class"}: denotes the class name of an R object
+ \item \texttt{function()}: denotes the name of an R function
+ \item vectors are represented with lower case letters: \texttt{u, v, ...}
+ \item matrices are represented with upper case letters: \texttt{X, Y, ...}
+ 
+\end{itemize}
+
+
+
+\end{document}
